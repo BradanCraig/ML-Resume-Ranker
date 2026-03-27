@@ -83,6 +83,20 @@ def convert_dates(df: pd.DataFrame, col_name: str) -> pd.DataFrame:
     return new_df
 
 
+def compute_experience(start_list, end_list):
+    """Subtract start dates from end dates and return total years of experience."""
+    if not isinstance(start_list, list) or not isinstance(end_list, list):
+        return 0
+
+    total_days = 0
+    for start, end in zip(start_list, end_list):
+        if isinstance(start, datetime) and isinstance(end, datetime):
+            total_days += (end - start).days
+
+    # convert days to years
+    return round(total_days / 365.25, 2)  # accounts for leap years
+
+
 def load_dataset(path: Path):
     df = pd.read_csv(path)
     print(df.columns)
@@ -114,6 +128,10 @@ def load_dataset(path: Path):
     df["end_dates"] = df["end_dates"].astype("object")
     df = convert_dates(df, "start_dates")
     df = convert_dates(df, "end_dates")
+
+    df["experience_years"] = df.apply(
+        lambda row: compute_experience(row["start_dates"], row["end_dates"]), axis=1
+    )
 
 
 def main():
